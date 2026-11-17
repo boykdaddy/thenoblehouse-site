@@ -17,18 +17,20 @@ html{background:#50d4d4}
 body{color:#f03c44;font-family:"Playfair Display SC",serif;text-align:center}
 /* Background stays fixed in the viewport; the page content scrolls over it. */
 .bg{position:fixed;inset:0;z-index:0;background:#50d4d4 url(assets/background.png) center/cover no-repeat}
-main{position:relative;z-index:1;padding:176px 24px 0}
+main{position:relative;z-index:1;padding:0 24px}
+/* First screen: name dead centre, with the top of the contact group (the line) peeking at the bottom. */
+.hero{height:calc(100vh - 22px);display:flex;flex-direction:column;justify-content:center}
 h1{font-weight:400;font-size:clamp(40px,6.2vw,78px);line-height:1;letter-spacing:.5px}
 .sub{margin-top:6px;font-size:clamp(16px,2vw,22px);letter-spacing:2px;line-height:1}
-.rule{max-width:1120px;margin:calc(100vh - 176px - 160px) auto 0;border-top:1px solid #f03c44;padding-top:6px}
+.contact{max-width:1120px;margin:0 auto;padding-bottom:16vh}
+.rule{border-top:1px solid #f03c44;height:26px}
 .addr{font-size:15px;font-weight:600;letter-spacing:1.5px}
-.mail{padding:30vh 0 22vh}
+.mail{margin-top:5px}
 .mail a{font-family:"Playfair Display",serif;font-size:15px;font-weight:600;letter-spacing:2px;color:#f03c44;text-decoration:none}
 .mail a:hover{text-decoration:underline}
 /* Fade-in sequence (only when JS runs): background, then title, then address, then email. */
 .js .bg,.js .f{opacity:0;transition:opacity 1.6s ease}
 .js .bg.on,.js .f.on{opacity:1}
-@media (max-width:600px){main{padding-top:22vh}.rule{margin-top:calc(100vh - 22vh - 170px)}}
 @media (prefers-reduced-motion:reduce){.js .bg,.js .f{transition-duration:.3s}}
 </style>
 <script>document.documentElement.className='js'</script>
@@ -36,14 +38,17 @@ h1{font-weight:400;font-size:clamp(40px,6.2vw,78px);line-height:1;letter-spacing
 <body>
 <div class="bg" aria-hidden="true"></div>
 <main>
-  <header class="f" data-step="1">
+  <header class="hero f" data-step="1">
     <h1>The Noble House</h1>
     <p class="sub">Private Equity</p>
   </header>
-  <div class="rule f" data-step="2">
-    <p class="addr">Miami Beach, FL, 33139</p>
-  </div>
-  <p class="mail f" data-step="3"><a href="mailto:info@thenoblehouse.com">info@thenoblehouse.com</a></p>
+  <section class="contact">
+    <div class="rule f" data-step="2"></div>
+    <div class="f" data-step="3">
+      <p class="addr">Miami Beach, FL, 33139</p>
+      <p class="mail"><a href="mailto:info@thenoblehouse.com">info@thenoblehouse.com</a></p>
+    </div>
+  </section>
 </main>
 <script>
 (function () {
