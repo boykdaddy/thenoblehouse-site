@@ -7,33 +7,68 @@
 <meta name="description" content="The Noble House — Private Equity">
 <link rel="icon" href="assets/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preload" href="assets/background.png" as="image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display+SC&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{min-height:100%}
-body{background:#50d4d4 url(assets/background.png) center/cover no-repeat fixed;color:#f03c44;font-family:"Playfair Display SC",serif;text-align:center}
-main{min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;padding:176px 24px 34px}
+html{background:#50d4d4}
+body{color:#f03c44;font-family:"Playfair Display SC",serif;text-align:center}
+/* Background stays fixed in the viewport; the page content scrolls over it. */
+.bg{position:fixed;inset:0;z-index:0;background:#50d4d4 url(assets/background.png) center/cover no-repeat}
+main{position:relative;z-index:1;padding:176px 24px 0}
 h1{font-weight:400;font-size:clamp(40px,6.2vw,78px);line-height:1;letter-spacing:.5px}
 .sub{margin-top:6px;font-size:clamp(16px,2vw,22px);letter-spacing:2px;line-height:1}
-footer{width:100%;max-width:1120px;margin:0 auto;border-top:1px solid #f03c44;padding-top:6px;display:flex;flex-direction:column;gap:5px}
+.rule{max-width:1120px;margin:calc(100vh - 176px - 160px) auto 0;border-top:1px solid #f03c44;padding-top:6px}
 .addr{font-size:15px;font-weight:600;letter-spacing:1.5px}
-footer a{font-family:"Playfair Display",serif;font-size:15px;font-weight:600;letter-spacing:2px;color:#f03c44;text-decoration:none}
-footer a:hover{text-decoration:underline}
-@media (max-width:600px){main{padding-top:22vh}}
+.mail{padding:30vh 0 22vh}
+.mail a{font-family:"Playfair Display",serif;font-size:15px;font-weight:600;letter-spacing:2px;color:#f03c44;text-decoration:none}
+.mail a:hover{text-decoration:underline}
+/* Fade-in sequence (only when JS runs): background, then title, then address, then email. */
+.js .bg,.js .f{opacity:0;transition:opacity 1.6s ease}
+.js .bg.on,.js .f.on{opacity:1}
+@media (max-width:600px){main{padding-top:22vh}.rule{margin-top:calc(100vh - 22vh - 170px)}}
+@media (prefers-reduced-motion:reduce){.js .bg,.js .f{transition-duration:.3s}}
 </style>
+<script>document.documentElement.className='js'</script>
 </head>
 <body>
+<div class="bg" aria-hidden="true"></div>
 <main>
-  <header>
+  <header class="f" data-step="1">
     <h1>The Noble House</h1>
     <p class="sub">Private Equity</p>
   </header>
-  <footer>
+  <div class="rule f" data-step="2">
     <p class="addr">Miami Beach, FL, 33139</p>
-    <a href="mailto:info@thenoblehouse.com">info@thenoblehouse.com</a>
-  </footer>
+  </div>
+  <p class="mail f" data-step="3"><a href="mailto:info@thenoblehouse.com">info@thenoblehouse.com</a></p>
 </main>
+<script>
+(function () {
+  var bg = document.querySelector('.bg');
+  var steps = document.querySelectorAll('.f');
+  var mail = document.querySelector('[data-step="3"]');
+  var mailTime = false, mailSeen = false;
+  function showMail() { if (mailTime && mailSeen) mail.classList.add('on'); }
+  function go() {
+    bg.classList.add('on');
+    setTimeout(function () { steps[0].classList.add('on'); }, 1800);
+    setTimeout(function () { steps[1].classList.add('on'); }, 3000);
+    setTimeout(function () { mailTime = true; showMail(); }, 4200);
+  }
+  // Email fades in last, once it has scrolled into view.
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (e) {
+      if (e[0].isIntersecting) { mailSeen = true; showMail(); }
+    }, { threshold: 0.6 }).observe(mail.querySelector('a'));
+  } else { mailSeen = true; }
+  var img = new Image();
+  img.onload = img.onerror = go;
+  img.src = 'assets/background.png';
+  setTimeout(function () { if (!bg.classList.contains('on')) go(); }, 5000);
+})();
+</script>
 </body>
 </html>
