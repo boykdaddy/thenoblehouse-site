@@ -48,6 +48,8 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
 .mail a:hover{text-decoration:underline}
 @media (max-aspect-ratio:4/5){
   main{padding:0 16px}
+  /* Mobile: name ~30% down the screen, leaving the lower part for a full-width harbour scene. */
+  .hero{inset:auto 0 auto 0;top:30%;transform:translateY(-50%)}
   .contact{padding-bottom:max(36px,7vh)}
   h1{font-size:clamp(20px,6.8vw,44px);letter-spacing:.16em;padding-left:.16em}
   :root{--sub:clamp(11px,3.4vw,16px)}
@@ -113,18 +115,18 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
   var SCENE_TOP = 0.653, SCENE_BOT = 0.945;
   var contact = document.querySelector('.contact'), subEl = document.querySelector('.sub');
   // Desktop: fill the screen.
-  // Mobile: the harbour scene must sit entirely BELOW the name and ABOVE the address, on any
-  // screen height. Measure both, then size the scene to fit that gap (shrinking it if the
-  // screen is short, with its side edges faded so no hard cut shows).
+  // Mobile: the harbour scene runs full width (a little wider than the screen, so the ships crop
+  // at the edges) and sits centred in the gap between the name and the address. It only shrinks
+  // if a screen is too short for that, so it never sits level with the name or the address.
   function cover() {
     var iw = img.naturalWidth, ih = img.naturalHeight, cw = cv.width, ch = cv.height, s, w, h, x, y;
     if (isMobile) {
       var dpr = cw / innerWidth;
       var gapTop = (subEl.getBoundingClientRect().bottom + 22) * dpr;
       var gapBot = (contact.getBoundingClientRect().top - 10) * dpr;
-      s = Math.min(cw / iw * 1.04, Math.max(1, gapBot - gapTop) / (ih * (SCENE_BOT - SCENE_TOP)));
+      s = Math.min(cw / iw * 1.18, Math.max(1, gapBot - gapTop) / (ih * (SCENE_BOT - SCENE_TOP)));
       w = iw * s; h = ih * s; x = (cw - w) / 2;
-      y = gapBot - SCENE_BOT * h;
+      y = (gapTop + gapBot) / 2 - ((SCENE_TOP + SCENE_BOT) / 2) * h;
       ctx.drawImage(img, x, y, w, h);
       if (w < cw) { fadeX(x, x + w * 0.08); fadeX(x + w, x + w * 0.92); }
     } else {
