@@ -10,7 +10,7 @@
       </g>
     </mask>
   </defs>
-  <g fill="#f03c44">
+  <g fill="#E73D46">
     <g mask="url(#battens)">
       <!-- mizzen (aft, left) -->
       <path d="M11,22 L29,26 L29,59 L14,59 Q8,40 11,22 Z"/>
