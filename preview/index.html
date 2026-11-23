@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<base href="/">
+<title>Noble</title>
+<meta name="description" content="The Noble House — Private Investments">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#4CD1CE">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preload" as="image" href="assets/sketch-desktop.webp" media="(min-aspect-ratio: 4/5)">
+<link rel="preload" as="image" href="assets/sketch-mobile.webp" media="(max-aspect-ratio: 4/5)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display+SC&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{--red:#E73D46;--teal:#4CD1CE}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--teal)}
+body{color:var(--red);font-family:"Playfair Display SC",serif;text-align:center}
+/* One screen, no scrolling. The sketch sits behind everything. */
+.bg,#sketch{position:fixed;inset:0;width:100%;height:100%}
+.bg{background:url(assets/sketch-desktop.webp) center/cover no-repeat}
+@media (max-aspect-ratio:4/5){.bg{background:url(assets/sketch-mobile.webp) center bottom/100% auto no-repeat}}
+.js .bg{display:none}
+main{position:relative;z-index:1;height:100vh;height:100dvh;display:flex;flex-direction:column;padding:0 24px}
+/* Title sits in the open sky, centred on ~31% of the screen height. */
+.hero{height:62%;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.contact{margin-top:auto;padding-bottom:max(36px,7vh)}
+h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spacing:.24em;padding-left:.24em}
+.sub{margin-top:.9em;font-size:clamp(11px,1.45vw,20px);letter-spacing:.55em;padding-left:.55em;line-height:1}
+/* Worn-ink (Skyfall-style) texture, masked over live text. */
+/* Second mask layer = how much ink survives in the worn spots (higher = lighter wear). */
+.worn{display:inline-block;--keep:rgba(0,0,0,.18);
+  -webkit-mask:url(assets/wear.webp) center/cover no-repeat,linear-gradient(var(--keep),var(--keep));
+  mask:url(assets/wear.webp) center/cover no-repeat,linear-gradient(var(--keep),var(--keep))}
+.sub .worn{--keep:rgba(0,0,0,.6)}
+.rule{width:min(640px,100%);margin:0 auto 20px;border-top:1px solid var(--red)}
+.addr{font-size:15px;font-weight:600;letter-spacing:1.5px}
+.mail{margin-top:5px}
+.mail a{font-family:"Playfair Display",serif;font-size:15px;font-weight:600;letter-spacing:2px;color:var(--red);text-decoration:none}
+.mail a:hover{text-decoration:underline}
+@media (max-aspect-ratio:4/5){
+  h1{font-size:clamp(20px,6.6vw,40px);letter-spacing:.16em;padding-left:.16em}
+  .sub{font-size:clamp(10px,3vw,14px);letter-spacing:.45em;padding-left:.45em}
+  .hero{height:58%}
+  .rule{width:70%}
+}
+/* Fade-ins run after the sketch has drawn in (JS only). */
+.js .f{opacity:0;transition:opacity 1.8s ease}
+.js .f.on{opacity:1}
+</style>
+<script>document.documentElement.className='js'</script>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+<canvas id="sketch" aria-hidden="true"></canvas>
+<main>
+  <header class="hero f">
+    <h1><span class="worn">The Noble House</span></h1>
+    <p class="sub"><span class="worn">Private Investments</span></p>
+  </header>
+  <section class="contact">
+    <div class="rule f"></div>
+    <div class="f">
+      <p class="addr">Miami Beach, FL, 33139</p>
+      <p class="mail"><a href="mailto:info@thenoblehouse.com">info@thenoblehouse.com</a></p>
+    </div>
+  </section>
+</main>
+<script>
+(function () {
+  var DURATION = 5200;                       // slow, cinematic draw-in (ms)
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var cv = document.getElementById('sketch'), ctx = cv.getContext('2d');
+  var steps = document.querySelectorAll('.f');
+  var mask = document.createElement('canvas'), mctx, mdata, thr, MW = 200, MH;
+  var img = new Image(), isMobile, done = false;
+
+  function wantMobile() { return innerWidth / innerHeight < 0.8; }
+  function fail() { document.documentElement.className = ''; }   // show CSS background + text, no animation
+
+  // Reveal threshold per mask cell: low at the bottom, high at the top, with blotchy noise
+  // so the edge looks shaded in by hand rather than a straight wipe.
+  function buildMask() {
+    MH = Math.max(2, Math.round(MW * innerHeight / innerWidth));
+    mask.width = MW; mask.height = MH; mctx = mask.getContext('2d');
+    mdata = mctx.createImageData(MW, MH);
+    var GX = 14, GY = Math.max(2, Math.round(GX * MH / MW)), g = [];
+    for (var k = 0; k < (GX + 1) * (GY + 1); k++) g.push(Math.random());
+    thr = new Float32Array(MW * MH);
+    for (var y = 0; y < MH; y++) for (var x = 0; x < MW; x++) {
+      var fx = x / (MW - 1) * GX, fy = y / (MH - 1) * GY, ix = Math.min(GX - 1, fx | 0), iy = Math.min(GY - 1, fy | 0);
+      var tx = fx - ix, ty = fy - iy, r = GX + 1;
+      var n = (g[iy*r+ix]*(1-tx) + g[iy*r+ix+1]*tx)*(1-ty) + (g[(iy+1)*r+ix]*(1-tx) + g[(iy+1)*r+ix+1]*tx)*ty;
+      thr[y * MW + x] = (1 - y / (MH - 1)) * 0.8 + n * 0.14 + Math.random() * 0.06;
+    }
+  }
+  function size() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(innerWidth * dpr); cv.height = Math.round(innerHeight * dpr);
+    buildMask();
+  }
+  // Desktop: fill the screen. Tall screens: keep the ships on both edges by fitting to width
+  // (allowing a gap of open sky at the top, faded into the teal) instead of cropping the sides.
+  function cover() {
+    var iw = img.naturalWidth, ih = img.naturalHeight, cw = cv.width, ch = cv.height;
+    var s = isMobile ? Math.max(cw / iw * 1.04, ch / ih * 0.8) : Math.max(cw / iw, ch / ih);
+    var w = iw * s, h = ih * s, x = (cw - w) / 2, y = h < ch ? ch - h : (ch - h) / 2;
+    ctx.drawImage(img, x, y, w, h);
+    if (y > 0) {
+      var op = ctx.globalCompositeOperation, f = ctx.createLinearGradient(0, y, 0, y + h * 0.18);
+      f.addColorStop(0, 'rgba(0,0,0,1)'); f.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.globalCompositeOperation = 'destination-out'; ctx.fillStyle = f; ctx.fillRect(0, y, cw, h * 0.18);
+      ctx.globalCompositeOperation = op;
+    }
+  }
+  function draw(p) {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    if (p >= 1.2) { cover(); return; }
+    var d = mdata.data;
+    for (var i = 0; i < thr.length; i++) {
+      var a = (p - thr[i]) / 0.09; d[i*4+3] = a <= 0 ? 0 : a >= 1 ? 255 : a * 255;
+    }
+    mctx.putImageData(mdata, 0, 0);
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(mask, 0, 0, cv.width, cv.height);
+    ctx.globalCompositeOperation = 'source-in';
+    cover();
+  }
+  function showText() {
+    var t = reduce ? [0, 150, 300] : [300, 1500, 2600];
+    steps.forEach(function (el, i) { setTimeout(function () { el.classList.add('on'); }, t[i]); });
+  }
+  function start() {
+    size();
+    if (reduce) { done = true; draw(2); showText(); return; }
+    var t0 = null;
+    function frame(ts) {
+      if (t0 === null) t0 = ts;
+      var k = Math.min(1, (ts - t0) / DURATION);
+      var e = k < .5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2) / 2;   // ease in-out
+      draw(-0.1 + e * 1.3);
+      if (k < 1) requestAnimationFrame(frame); else { done = true; draw(2); showText(); }
+    }
+    requestAnimationFrame(frame);
+  }
+  function load(cb) {
+    isMobile = wantMobile();
+    img.onload = cb; img.onerror = fail;
+    img.src = isMobile ? 'assets/sketch-mobile.webp' : 'assets/sketch-desktop.webp';
+  }
+  if (!ctx) { fail(); return; }
+  load(start);
+  addEventListener('resize', function () {
+    if (wantMobile() !== isMobile) { load(function () { size(); if (done) draw(2); }); return; }
+    size(); if (done) draw(2);
+  });
+})();
+</script>
+</body>
+</html>
