@@ -16,7 +16,8 @@
 html{background:#50d4d4}
 body{color:#f03c44;font-family:"Playfair Display SC",serif;text-align:center}
 /* Background stays fixed in the viewport; the page content scrolls over it. */
-.bg{position:fixed;inset:0;z-index:0;background:#50d4d4 url(assets/background.png) center/cover no-repeat}
+/* Sized to the large viewport (mobile browser bar hidden) so it doesn't rescale when the bar slides away. */
+.bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;z-index:0;background:#50d4d4 url(assets/background.png) center/cover no-repeat}
 main{position:relative;z-index:1;padding:0 24px}
 /* First screen: name dead centre, with the top of the contact group (the line) peeking at the bottom. */
 .hero{height:calc(100vh - 22px);display:flex;flex-direction:column;justify-content:center}
