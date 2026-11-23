@@ -27,27 +27,28 @@ body{color:var(--red);font-family:"Playfair Display SC",serif;text-align:center}
 @media (max-aspect-ratio:4/5){.bg{background:url(assets/sketch-mobile.webp) center bottom/100% auto no-repeat}}
 .js .bg{display:none}
 main{position:relative;z-index:1;height:100vh;height:100dvh;display:flex;flex-direction:column;padding:0 24px}
-/* Title sits in the open sky, centred on ~31% of the screen height. */
-.hero{height:62%;display:flex;flex-direction:column;justify-content:center;align-items:center}
-.contact{margin-top:auto;padding-bottom:max(36px,7vh)}
+/* Name + tagline dead centre of the screen; contact block pinned to the bottom. */
+.hero{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;pointer-events:none}
+.contact{margin-top:auto;padding-bottom:max(22px,3.6vh)}
 h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spacing:.24em;padding-left:.24em}
 .sub{margin-top:.9em;font-size:clamp(11px,1.45vw,20px);letter-spacing:.55em;padding-left:.55em;line-height:1}
-/* Worn-ink (Skyfall-style) texture, masked over live text. */
-/* Second mask layer = how much ink survives in the worn spots (higher = lighter wear). */
-.worn{display:inline-block;--keep:rgba(0,0,0,.18);
-  -webkit-mask:url(assets/wear.webp) center/cover no-repeat,linear-gradient(var(--keep),var(--keep));
-  mask:url(assets/wear.webp) center/cover no-repeat,linear-gradient(var(--keep),var(--keep))}
-.sub .worn{--keep:rgba(0,0,0,.6)}
-.rule{width:min(640px,100%);margin:0 auto 20px;border-top:1px solid var(--red)}
-.addr{font-size:15px;font-weight:600;letter-spacing:1.5px}
+/* Worn-ink (Skyfall-style) texture masked over all copy and the rule.
+   --keep = how much ink survives in the worn spots (higher = lighter wear); --grain = texture scale. */
+.worn{display:inline-block;--keep:rgba(0,0,0,.42);--grain:1000px;
+  -webkit-mask:url(assets/wear.webp) 0 0/var(--grain) auto repeat,linear-gradient(var(--keep),var(--keep));
+  mask:url(assets/wear.webp) 0 0/var(--grain) auto repeat,linear-gradient(var(--keep),var(--keep))}
+.sub .worn{--keep:rgba(0,0,0,.6);--grain:700px}
+.contact .worn{--keep:rgba(0,0,0,.62);--grain:600px}
+.contact .rule{display:block;height:2px;margin:0 auto 20px;background:var(--red);--keep:rgba(0,0,0,.6);--grain:1400px}
+.addr,.mail a{font-size:15px;font-weight:600;letter-spacing:1.5px}
 .mail{margin-top:5px}
-.mail a{font-family:"Playfair Display",serif;font-size:15px;font-weight:600;letter-spacing:2px;color:var(--red);text-decoration:none}
+.mail a{color:var(--red);text-decoration:none}
 .mail a:hover{text-decoration:underline}
 @media (max-aspect-ratio:4/5){
-  h1{font-size:clamp(20px,6.6vw,40px);letter-spacing:.16em;padding-left:.16em}
+  main{padding:0 16px}
+  .contact{padding-bottom:max(36px,7vh)}
+  h1{font-size:clamp(20px,6.8vw,44px);letter-spacing:.16em;padding-left:.16em}
   .sub{font-size:clamp(10px,3vw,14px);letter-spacing:.45em;padding-left:.45em}
-  .hero{height:58%}
-  .rule{width:70%}
 }
 /* Fade-ins run after the sketch has drawn in (JS only). */
 .js .f{opacity:0;transition:opacity 1.8s ease}
@@ -64,10 +65,10 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
     <p class="sub"><span class="worn">Private Investments</span></p>
   </header>
   <section class="contact">
-    <div class="rule f"></div>
+    <div class="f"><span class="rule worn" id="rule"></span></div>
     <div class="f">
-      <p class="addr">Miami Beach, FL, 33139</p>
-      <p class="mail"><a href="mailto:info@thenoblehouse.com">info@thenoblehouse.com</a></p>
+      <p class="addr"><span class="worn">Miami Beach, FL, 33139</span></p>
+      <p class="mail"><a class="worn" href="mailto:info@thenoblehouse.com">info@thenoblehouse.com</a></p>
     </div>
   </section>
 </main>
@@ -106,18 +107,29 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
   }
   // Desktop: fill the screen. Tall screens: keep the ships on both edges by fitting to width
   // (allowing a gap of open sky at the top, faded into the teal) instead of cropping the sides.
+  // Desktop: fill the screen, nudged down so the centred name clears the waterfront flags.
+  // Mobile: fit to width and sit the harbour scene just above the contact block, fading its
+  // bottom edge out, so the name has open sky and the address/email sit on clear teal.
   function cover() {
-    var iw = img.naturalWidth, ih = img.naturalHeight, cw = cv.width, ch = cv.height;
-    var s = isMobile ? Math.max(cw / iw * 1.04, ch / ih * 0.8) : Math.max(cw / iw, ch / ih);
-    var w = iw * s, h = ih * s, x = (cw - w) / 2, y = h < ch ? ch - h : (ch - h) / 2;
-    ctx.drawImage(img, x, y, w, h);
-    if (y > 0) {
-      var op = ctx.globalCompositeOperation, f = ctx.createLinearGradient(0, y, 0, y + h * 0.18);
-      f.addColorStop(0, 'rgba(0,0,0,1)'); f.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.globalCompositeOperation = 'destination-out'; ctx.fillStyle = f; ctx.fillRect(0, y, cw, h * 0.18);
-      ctx.globalCompositeOperation = op;
+    var iw = img.naturalWidth, ih = img.naturalHeight, cw = cv.width, ch = cv.height, s, w, h, x, y;
+    if (isMobile) {
+      s = cw / iw * 1.04; w = iw * s; h = ih * s; x = (cw - w) / 2;
+      var dpr = cw / innerWidth, top = contact.getBoundingClientRect().top * dpr;
+      y = top - 10 * dpr - h;
+    } else {
+      s = Math.max(cw / iw, ch / ih); w = iw * s; h = ih * s; x = (cw - w) / 2;
+      y = (ch - h) / 2 + ch * 0.085;
     }
+    ctx.drawImage(img, x, y, w, h);
+    if (isMobile) fade(y + h * 0.9, y + h);
   }
+  function fade(from, to) {
+    var op = ctx.globalCompositeOperation, f = ctx.createLinearGradient(0, from, 0, to);
+    f.addColorStop(0, 'rgba(0,0,0,0)'); f.addColorStop(1, 'rgba(0,0,0,1)');
+    ctx.globalCompositeOperation = 'destination-out'; ctx.fillStyle = f; ctx.fillRect(0, from, cv.width, cv.height - from);
+    ctx.globalCompositeOperation = op;
+  }
+  var contact = document.querySelector('.contact');
   function draw(p) {
     ctx.globalCompositeOperation = 'source-over';
     ctx.clearRect(0, 0, cv.width, cv.height);
@@ -154,6 +166,15 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
     img.onload = cb; img.onerror = fail;
     img.src = isMobile ? 'assets/sketch-mobile.webp' : 'assets/sketch-desktop.webp';
   }
+  // Red rule = exact visual width of "The Noble House" (span width minus its trailing letter-spacing).
+  var title = document.querySelector('h1 .worn'), rule = document.getElementById('rule');
+  function fitRule() {
+    var ls = parseFloat(getComputedStyle(title).letterSpacing) || 0;
+    rule.style.width = Math.round(title.getBoundingClientRect().width - ls) + 'px';
+  }
+  fitRule(); if (document.fonts) document.fonts.ready.then(function () { fitRule(); if (done) draw(2); });
+  addEventListener('resize', fitRule);
+
   if (!ctx) { fail(); return; }
   load(start);
   addEventListener('resize', function () {
