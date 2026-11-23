@@ -28,7 +28,7 @@ main{position:relative;z-index:1;height:100vh;height:100dvh;display:flex;flex-di
 /* Name + tagline dead centre of the screen; contact block pinned to the bottom. */
 .hero{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;pointer-events:none}
 .contact{margin-top:auto;padding-bottom:max(22px,3.6vh)}
-h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spacing:.24em;padding-left:.24em}
+h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spacing:.24em;padding-left:.24em;white-space:nowrap}
 :root{--sub:clamp(11px,1.45vw,20px)}
 .sub{margin-top:.9em;font-size:var(--sub);letter-spacing:.55em;padding-left:.55em;line-height:1}
 /* Worn-ink (Skyfall-style) texture masked over all copy and the rule.
@@ -38,7 +38,7 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
   mask:url(assets/wear.webp) 0 0/var(--grain) auto repeat,linear-gradient(var(--keep),var(--keep))}
 .sub .worn{--keep:rgba(0,0,0,.6);--grain:700px}
 .contact .worn{--keep:rgba(0,0,0,.62);--grain:600px}
-.contact .rule{display:block;height:2px;margin:0 auto 20px;background:var(--red);--keep:rgba(0,0,0,.6);--grain:1400px}
+.contact .rule{display:block;height:1px;margin:0 auto 20px;background:var(--red);--keep:rgba(0,0,0,.75);--grain:1400px}
 /* Address + email: never larger than 15px, and always smaller than the tagline. */
 .addr,.mail a{font-size:min(15px,calc(var(--sub) * .8));font-weight:600;letter-spacing:1.5px}
 .mail{margin-top:5px}
@@ -47,7 +47,7 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
 @media (max-aspect-ratio:4/5){
   main{padding:0 16px}
   /* Mobile: name ~30% down the screen, leaving the lower part for a full-width harbour scene. */
-  .hero{inset:auto 0 auto 0;top:30%;transform:translateY(-50%)}
+  .hero{inset:auto 0 auto 0;top:40%;transform:translateY(-50%)}
   .contact{padding-bottom:max(36px,7vh)}
   h1{font-size:clamp(20px,6.8vw,44px);letter-spacing:.16em;padding-left:.16em}
   :root{--sub:clamp(11px,3.4vw,16px)}
@@ -177,7 +177,20 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
   }
   // Red rule = exact visual width of "The Noble House" (span width minus its trailing letter-spacing).
   var title = document.querySelector('h1 .worn'), rule = document.getElementById('rule');
+  // Name always on one line. On mobile it is scaled up to fill the screen width; on desktop it
+  // keeps its normal size and only shrinks if a narrow window would otherwise clip it.
+  var h1 = document.querySelector('h1');
+  function fitTitle() {
+    h1.style.fontSize = '';
+    var ls = parseFloat(getComputedStyle(title).letterSpacing) || 0;
+    var visual = title.getBoundingClientRect().width - ls;
+    var avail = document.querySelector('main').clientWidth - 32;
+    var k = avail / visual;
+    if (innerWidth / innerHeight >= 0.8) k = Math.min(1, k);
+    h1.style.fontSize = (parseFloat(getComputedStyle(h1).fontSize) * k) + 'px';
+  }
   function fitRule() {
+    fitTitle();
     var ls = parseFloat(getComputedStyle(title).letterSpacing) || 0;
     rule.style.width = Math.round(title.getBoundingClientRect().width - ls) + 'px';
   }
