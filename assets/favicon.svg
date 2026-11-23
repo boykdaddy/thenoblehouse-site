@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="2.5 -6 96 96">
+  <defs>
+    <mask id="battens">
+      <rect width="100" height="100" fill="#fff"/>
+      <g stroke="#000" stroke-width="2.4">
+        <line x1="0" y1="20" x2="100" y2="21"/>
+        <line x1="0" y1="31" x2="100" y2="32"/>
+        <line x1="0" y1="42" x2="100" y2="42.5"/>
+        <line x1="0" y1="52" x2="100" y2="52.3"/>
+      </g>
+    </mask>
+  </defs>
+  <g fill="#f03c44">
+    <g mask="url(#battens)">
+      <!-- mizzen (aft, left) -->
+      <path d="M11,22 L29,26 L29,59 L14,59 Q8,40 11,22 Z"/>
+      <!-- main -->
+      <path d="M36,8 L62,13 L62,61 L38,61 Q30,34 36,8 Z"/>
+      <!-- fore (bow, right) -->
+      <path d="M68,22 L88,26 L88,60 L71,60 Q64,40 68,22 Z"/>
+    </g>
+    <!-- masts -->
+    <rect x="27.6" y="18" width="2.2" height="45"/>
+    <rect x="57" y="3" width="2.6" height="62"/>
+    <rect x="84.6" y="18" width="2.2" height="45"/>
+    <!-- pennant on main mast -->
+    <path d="M59.6,3 L69,5.5 L59.6,8.2 Z"/>
+    <!-- hull: raised stern castle left, sheer sweeping up to bow right -->
+    <path d="M5,58 L19,58 L21,65 Q52,70 86,64 L96,59 L94,65 Q88,77 72,80 L28,81 Q13,79 5,58 Z"/>
+  </g>
+</svg>
