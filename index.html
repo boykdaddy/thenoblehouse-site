@@ -27,7 +27,7 @@ body{color:var(--red);font-family:"Playfair Display SC",serif;text-align:center}
 main{position:relative;z-index:1;height:100vh;height:100dvh;display:flex;flex-direction:column;padding:0 24px}
 /* Name + tagline dead centre of the screen; contact block pinned to the bottom. */
 .hero{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;pointer-events:none}
-.contact{margin-top:auto;padding-bottom:max(22px,3.6vh)}
+.contact{margin-top:auto;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spacing:.24em;padding-left:.24em;white-space:nowrap}
 :root{--sub:clamp(11px,1.45vw,20px)}
 .sub{margin-top:.9em;font-size:var(--sub);letter-spacing:.55em;padding-left:.55em;line-height:1}
@@ -49,7 +49,6 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
   main{padding:0 16px}
   /* Mobile: name ~30% down the screen, leaving the lower part for a full-width harbour scene. */
   .hero{inset:auto 0 auto 0;top:40%;transform:translateY(-50%)}
-  .contact{padding-bottom:calc(max(28px,4.5vh) + env(safe-area-inset-bottom))}
   .contact .rule{margin-bottom:18px}
   .mail{margin-top:12px}
   h1{font-size:clamp(20px,6.8vw,44px);letter-spacing:.16em;padding-left:.16em}
@@ -58,14 +57,13 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
 }
 /* Compass: a heading tape at the top, the same width as the name, pointing the visitor to Miami Beach.
    Hidden without JS (it needs the visitor's timezone to know where they are). */
-.compass{display:none;position:absolute;left:0;right:0;top:calc(max(30px,7vh) + env(safe-area-inset-top));flex-direction:column;align-items:center;pointer-events:none}
+.compass{display:none;position:absolute;left:0;right:0;top:calc(24px + env(safe-area-inset-top));flex-direction:column;align-items:center;pointer-events:none}
 .js .compass{display:flex;opacity:0;transition:opacity 1.4s ease}
 .js .compass.on{opacity:1}
-#tape{display:block;height:48px}
+#tape{display:block;height:30px}
 .compass .worn{--keep:rgba(0,0,0,.62);--grain:600px}
-.compass .read{margin-top:8px;font-size:min(13px,calc(var(--sub) * .72));line-height:1;font-weight:700;letter-spacing:1.5px;opacity:0;transition:opacity 1.6s ease}
+.compass .read{margin-top:6px;font-size:min(13px,calc(var(--sub) * .72));line-height:1;font-weight:700;letter-spacing:1.5px;opacity:0;transition:opacity 1.6s ease}
 .compass .read.on{opacity:1}
-@media (max-aspect-ratio:4/5){.compass{top:calc(15vh + env(safe-area-inset-top))}#tape{height:44px}}
 /* Fade-ins run after the sketch has drawn in (JS only). */
 .js .f{opacity:0;transition:opacity 1.8s ease}
 .js .f.on{opacity:1}
@@ -211,7 +209,8 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
     fitTitle();
     var ls = parseFloat(getComputedStyle(title).letterSpacing) || 0;
     rule.style.width = Math.round(title.getBoundingClientRect().width - ls) + 'px';
-    sizeTape(Math.round(title.getBoundingClientRect().width - ls));
+    var mobW = innerWidth / innerHeight < 0.8;
+    sizeTape(Math.max(220, Math.round(mobW ? document.querySelector('main').clientWidth * .75 : (title.getBoundingClientRect().width - ls) * .5)));
   }
 
   // ---- Compass ----------------------------------------------------------------------------
@@ -242,29 +241,33 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
     if (!tctx) return;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     tape.style.width = w + 'px';
-    tape.width = Math.round(w * dpr); tape.height = Math.round((tape.clientHeight || 48) * dpr);
+    tape.width = Math.round(w * dpr); tape.height = Math.round((tape.clientHeight || 30) * dpr);
     drawTape(heading);
   }
-  // The card: a top edge, ticks every 5 degrees hanging from it, numbers and N/NE/E... below,
-  // a fixed pointer (lubber line) in the middle, ends fading out.
+  // The card: a pointer, a hairline edge, graduations every degree (taller every 5 and 10),
+  // numbers and N/NE/E... below, a hairline lubber line in the middle, ends fading out.
   function drawTape(hd) {
     var w = tape.clientWidth, H = tape.clientHeight; if (!w || !H) return;
-    var dpr = tape.width / w, c = tctx, mob = innerWidth / innerHeight < 0.8;
+    var dpr = tape.width / w, c = tctx, mob = innerWidth / innerHeight < 0.8, px = 1 / dpr;
     c.setTransform(dpr, 0, 0, dpr, 0, 0); c.globalCompositeOperation = 'source-over';
     c.clearRect(0, 0, w, H);
-    var span = mob ? 110 : 120, ppd = w / span, cx = w / 2, top = 10, every = ppd > 5 ? 15 : 30;
+    var span = mob ? 80 : 90, ppd = w / span, cx = w / 2, top = 6, every = ppd > 3 ? 15 : 30;
+    var snap = function (v) { return Math.round(v * dpr) / dpr; };
     c.fillStyle = '#E73D46'; c.textAlign = 'center';
-    c.fillRect(0, top, w, 1);
-    for (var d = Math.ceil((hd - span / 2 - 5) / 5) * 5; d <= hd + span / 2 + 5; d += 5) {
-      var x = cx + (d - hd) * ppd, n = ((d % 360) + 360) % 360, card = n % 45 === 0, lab = card || n % every === 0;
-      c.fillRect(x - .5, top, 1, lab ? 12 : n % 10 === 0 ? 8 : 5);
+    c.fillRect(0, top, w, Math.max(px, .5));
+    for (var d = Math.ceil(hd - span / 2 - 2); d <= hd + span / 2 + 2; d++) {
+      var x = snap(cx + (d - hd) * ppd), n = ((d % 360) + 360) % 360, card = n % 45 === 0, lab = card || n % every === 0;
+      var len = lab ? 8 : n % 10 === 0 ? 6 : n % 5 === 0 ? 4.5 : 2.5;
+      c.globalAlpha = n % 5 === 0 ? 1 : .7;
+      c.fillRect(x, top, n % 5 === 0 ? Math.max(px, .75) : Math.max(px, .5), len);
+      c.globalAlpha = 1;
       if (lab) {
-        c.font = (card ? '700 ' + (mob ? 13 : 16) : '400 ' + (mob ? 10 : 13)) + 'px "Playfair Display SC", serif';
-        c.fillText(card ? P8[n / 45] : String(n), x, top + 12 + (mob ? 16 : 18));
+        c.font = (card ? '700 ' + (mob ? 11 : 12) : '400 ' + (mob ? 9 : 10)) + 'px "Playfair Display SC", serif';
+        c.fillText(card ? P8[n / 45] : String(n), x, top + 8 + (mob ? 11 : 12));
       }
     }
-    c.beginPath(); c.moveTo(cx - 5, 0); c.lineTo(cx + 5, 0); c.lineTo(cx, 8); c.closePath(); c.fill();
-    c.fillRect(cx - .75, top, 1.5, 17);
+    c.beginPath(); c.moveTo(cx - 3.5, 0); c.lineTo(cx + 3.5, 0); c.lineTo(cx, 5); c.closePath(); c.fill();
+    c.fillRect(snap(cx) - px, top, 2 * px, 10);
     c.globalCompositeOperation = 'destination-out';
     [[0, w * .2], [w, w * .8]].forEach(function (e) {
       var g = c.createLinearGradient(e[0], 0, e[1], 0);
