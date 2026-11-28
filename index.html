@@ -47,8 +47,8 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
 .mail a:hover{text-decoration:underline}
 @media (max-aspect-ratio:4/5){
   main{padding:0 16px}
-  /* Mobile: name ~30% down the screen, leaving the lower part for a full-width harbour scene. */
-  .hero{inset:auto 0 auto 0;top:40%;transform:translateY(-50%)}
+  /* Mobile: name dead centre. JS lifts it only if it would touch the harbour drawing (short screens); see cover(). */
+  .hero{inset:auto 0 auto 0;top:50%;transform:translateY(-50%)}
   .contact .rule{margin-bottom:18px}
   .mail{margin-top:12px}
   h1{font-size:clamp(20px,6.8vw,44px);letter-spacing:.16em;padding-left:.16em}
@@ -126,7 +126,7 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
   // Where the drawing sits inside the mobile image (fraction of its height): above SCENE_TOP and
   // below SCENE_BOT the image is blank paper.
   var SCENE_TOP = 0.653, SCENE_BOT = 0.945;
-  var contact = document.querySelector('.contact'), subEl = document.querySelector('.sub');
+  var contact = document.querySelector('.contact'), subEl = document.querySelector('.sub'), heroEl = document.querySelector('.hero');
   // Desktop: fill the screen.
   // Mobile: the harbour scene runs full width (a little wider than the screen, so the ships crop
   // at the edges) and sits centred in the gap between the name and the address. It only shrinks
@@ -135,14 +135,21 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
     var iw = img.naturalWidth, ih = img.naturalHeight, cw = cv.width, ch = cv.height, s, w, h, x, y;
     if (isMobile) {
       var dpr = cw / innerWidth;
-      var gapTop = (subEl.getBoundingClientRect().bottom + 22) * dpr;
+      // The scene's place was designed with the name 40% down the screen. Measure from that spot
+      // (not from where the name is now), so the scene never moves when the name does.
+      var hr = heroEl.getBoundingClientRect(), off = subEl.getBoundingClientRect().bottom - (hr.top + hr.height / 2);
+      var gapTop = (innerHeight * .4 + off + 22) * dpr;
       var gapBot = (contact.getBoundingClientRect().top - 10) * dpr;
       s = Math.min(cw / iw * 1.18, Math.max(1, gapBot - gapTop) / (ih * (SCENE_BOT - SCENE_TOP)));
       w = iw * s; h = ih * s; x = (cw - w) / 2;
       y = (gapTop + gapBot) / 2 - ((SCENE_TOP + SCENE_BOT) / 2) * h;
+      // Name dead centre, unless "Holding Company" would then touch the top of the drawing:
+      // then it rises just enough to clear it (4px).
+      heroEl.style.top = Math.min(innerHeight * .5, (y + SCENE_TOP * h) / dpr - 4 - off) + 'px';
       ctx.drawImage(img, x, y, w, h);
       if (w < cw) { fadeX(x, x + w * 0.08); fadeX(x + w, x + w * 0.92); }
     } else {
+      heroEl.style.top = '';
       s = Math.max(cw / iw, ch / ih); w = iw * s; h = ih * s; x = (cw - w) / 2; y = (ch - h) / 2;
       ctx.drawImage(img, x, y, w, h);
     }
