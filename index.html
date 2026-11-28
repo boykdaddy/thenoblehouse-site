@@ -29,7 +29,7 @@ main{position:relative;z-index:1;height:100vh;height:100dvh;display:flex;flex-di
 .hero{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;pointer-events:none}
 .contact{margin-top:auto;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spacing:.24em;padding-left:.24em;white-space:nowrap}
-:root{--sub:clamp(11px,1.45vw,20px)}
+:root{--sub:clamp(11px,1.45vw,20px);--small:min(13px,calc(var(--sub) * .72))}
 .sub{margin-top:.9em;font-size:var(--sub);letter-spacing:.55em;padding-left:.55em;line-height:1}
 /* Worn-ink (Skyfall-style) texture masked over all copy and the rule.
    --keep = how much ink survives in the worn spots (higher = lighter wear); --grain = texture scale. */
@@ -39,9 +39,9 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
 .sub .worn{--keep:rgba(0,0,0,.6);--grain:700px}
 .contact .worn{--keep:rgba(0,0,0,.62);--grain:600px}
 .contact .rule{display:block;height:1px;margin:0 auto 16px;background:var(--red);--keep:rgba(0,0,0,.75);--grain:1400px}
-/* Address + email: never larger than 15px, and always smaller than the tagline.
+/* Address, email, the bearing line and the compass letters all share one size (--small) and weight.
    Size and line-height sit on the <p> itself so both lines are the same height (no 16px strut under the link). */
-.addr,.mail{font-size:min(15px,calc(var(--sub) * .8));line-height:1;font-weight:400;letter-spacing:1.5px}
+.addr,.mail{font-size:var(--small);line-height:1;font-weight:400;letter-spacing:1.5px}
 .mail{margin-top:10px}
 .mail a{color:var(--red);text-decoration:none}
 .mail a:hover{text-decoration:underline}
@@ -52,7 +52,7 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
   .contact .rule{margin-bottom:18px}
   .mail{margin-top:12px}
   h1{font-size:clamp(20px,6.8vw,44px);letter-spacing:.16em;padding-left:.16em}
-  :root{--sub:clamp(11px,3.4vw,16px)}
+  :root{--sub:clamp(11px,3.4vw,16px);--small:min(13px,calc(var(--sub) * .72))}
   .sub{letter-spacing:.45em;padding-left:.45em}
 }
 /* Compass: a heading tape at the top, the same width as the name, pointing the visitor to Miami Beach.
@@ -62,7 +62,7 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
 .js .compass.on{opacity:1}
 #tape{display:block;height:30px}
 .compass .worn{--keep:rgba(0,0,0,.62);--grain:600px}
-.compass .read{margin-top:6px;font-size:min(13px,calc(var(--sub) * .72));line-height:1;font-weight:400;letter-spacing:1.5px;opacity:0;transition:opacity 1.6s ease}
+.compass .read{margin-top:6px;font-size:var(--small);line-height:1;font-weight:400;letter-spacing:1.5px;opacity:0;transition:opacity 1.6s ease}
 .compass .read.on{opacity:1}
 /* Fade-ins run after the sketch has drawn in (JS only). */
 .js .f{opacity:0;transition:opacity 1.8s ease}
@@ -236,10 +236,11 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
     var h = Math.pow(Math.sin((f2 - f1) / 2), 2) + Math.cos(f1) * Math.cos(f2) * Math.pow(Math.sin(dl / 2), 2);
     return [brg, Math.round(2 * 6371 * Math.asin(Math.sqrt(h)) / LEAGUE_KM)];
   }
-  var tape = document.getElementById('tape'), tctx = tape.getContext('2d'), heading = 0;
+  var tape = document.getElementById('tape'), tctx = tape.getContext('2d'), heading = 0, letterPx = 12;
   function sizeTape(w) {
     if (!tctx) return;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    letterPx = parseFloat(getComputedStyle(document.getElementById('read')).fontSize) || 12;
     tape.style.width = w + 'px';
     tape.width = Math.round(w * dpr); tape.height = Math.round((tape.clientHeight || 30) * dpr);
     drawTape(heading);
@@ -262,8 +263,8 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
       c.fillRect(x, top, n % 5 === 0 ? Math.max(px, .75) : Math.max(px, .5), len);
       c.globalAlpha = 1;
       if (lab) {
-        c.font = (card ? '700 ' + (mob ? 11 : 12) : '400 ' + (mob ? 9 : 10)) + 'px "Playfair Display SC", serif';
-        c.fillText(card ? P8[n / 45] : String(n), x, top + 8 + (mob ? 11 : 12));
+        c.font = '400 ' + (card ? letterPx : Math.max(8, letterPx * .8)) + 'px "Playfair Display SC", serif';
+        c.fillText(card ? P8[n / 45] : String(n), x, top + 9 + letterPx);
       }
     }
     c.beginPath(); c.moveTo(cx - 3.5, 0); c.lineTo(cx + 3.5, 0); c.lineTo(cx, 5); c.closePath(); c.fill();
