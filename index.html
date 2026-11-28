@@ -13,7 +13,7 @@
 <link rel="preload" as="image" href="assets/sketch-mobile.webp" media="(max-aspect-ratio: 4/5)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display+SC&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display+SC:wght@400;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
 :root{--red:#E73D46;--teal:#4CD1CE}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -38,17 +38,20 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
   mask:url(assets/wear.webp) 0 0/var(--grain) auto repeat,linear-gradient(var(--keep),var(--keep))}
 .sub .worn{--keep:rgba(0,0,0,.6);--grain:700px}
 .contact .worn{--keep:rgba(0,0,0,.62);--grain:600px}
-.contact .rule{display:block;height:1px;margin:0 auto 20px;background:var(--red);--keep:rgba(0,0,0,.75);--grain:1400px}
-/* Address + email: never larger than 15px, and always smaller than the tagline. */
-.addr,.mail a{font-size:min(15px,calc(var(--sub) * .8));font-weight:600;letter-spacing:1.5px}
-.mail{margin-top:5px}
+.contact .rule{display:block;height:1px;margin:0 auto 16px;background:var(--red);--keep:rgba(0,0,0,.75);--grain:1400px}
+/* Address + email: never larger than 15px, and always smaller than the tagline.
+   Size and line-height sit on the <p> itself so both lines are the same height (no 16px strut under the link). */
+.addr,.mail{font-size:min(15px,calc(var(--sub) * .8));line-height:1;font-weight:700;letter-spacing:1.5px}
+.mail{margin-top:10px}
 .mail a{color:var(--red);text-decoration:none}
 .mail a:hover{text-decoration:underline}
 @media (max-aspect-ratio:4/5){
   main{padding:0 16px}
   /* Mobile: name ~30% down the screen, leaving the lower part for a full-width harbour scene. */
   .hero{inset:auto 0 auto 0;top:40%;transform:translateY(-50%)}
-  .contact{padding-bottom:max(36px,7vh)}
+  .contact{padding-bottom:calc(max(28px,4.5vh) + env(safe-area-inset-bottom))}
+  .contact .rule{margin-bottom:18px}
+  .mail{margin-top:12px}
   h1{font-size:clamp(20px,6.8vw,44px);letter-spacing:.16em;padding-left:.16em}
   :root{--sub:clamp(11px,3.4vw,16px)}
   .sub{letter-spacing:.45em;padding-left:.45em}
@@ -70,7 +73,7 @@ h1{font-weight:400;font-size:clamp(24px,5.2vw,76px);line-height:1.1;letter-spaci
   <section class="contact">
     <div class="f"><span class="rule worn" id="rule"></span></div>
     <div class="f">
-      <p class="addr"><span class="worn">Miami Beach, FL, 33139</span></p>
+      <p class="addr"><span class="worn">Miami Beach, Florida, 33139</span></p>
       <p class="mail"><a class="worn" href="mailto:info@thenoblehouse.com">info@thenoblehouse.com</a></p>
     </div>
   </section>
